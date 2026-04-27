@@ -1,0 +1,36 @@
+services:
+  api:
+    build: .
+    container_name: tradingapp-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - app_data:/app/data
+    depends_on:
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    container_name: tradingapp-worker
+    env_file:
+      - .env
+    volumes:
+      - app_data:/app/data
+    depends_on:
+      - redis
+    command: celery -A app.tasks worker --loglevel=info
+
+  redis:
+    image: redis:7-alpine
+    container_name: tradingapp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  app_data:
+  redis_data:

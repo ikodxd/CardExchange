@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Exchange</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<main class="shell">
+    <section class="hero">
+        <p class="eyebrow">Collectible Card Exchange</p>
+        <h1>Sign In And Register</h1>
+        <p class="lead">
+            Every new account is always created with the user role. Moderator access can only be granted by
+            the administrator through a protected endpoint.
+        </p>
+    </section>
+
+    <section class="panel auth-panel">
+        <div class="tabs">
+            <button class="tab active" data-tab="login">Sign In</button>
+            <button class="tab" data-tab="register">Create Account</button>
+        </div>
+
+        <form id="login-form" class="auth-form active">
+            <label>
+                <span>Username</span>
+                <input type="text" name="username" placeholder="ivan_petrov" required>
+            </label>
+            <label>
+                <span>Password</span>
+                <input type="password" name="password" placeholder="At least 6 characters" required>
+            </label>
+            <button type="submit" class="primary">Sign In</button>
+        </form>
+
+        <form id="register-form" class="auth-form">
+            <label>
+                <span>Email</span>
+                <input type="email" name="email" placeholder="name@example.com" required>
+            </label>
+            <label>
+                <span>Username</span>
+                <input type="text" name="username" placeholder="new_user" required>
+            </label>
+            <label>
+                <span>Password</span>
+                <input type="password" name="password" placeholder="At least 6 characters" required>
+            </label>
+            <button type="submit" class="primary">Create Account</button>
+        </form>
+
+        <div id="message" class="message" aria-live="polite"></div>
+    </section>
+
+    <section id="profile-card" class="panel profile hidden">
+        <div class="profile-header">
+            <div>
+                <p class="eyebrow">Account</p>
+                <h2 id="profile-name">User</h2>
+            </div>
+            <span id="role-badge" class="badge">user</span>
+        </div>
+        <p id="profile-email" class="profile-email"></p>
+        <p id="role-description" class="role-description"></p>
+        <button id="logout-button" class="secondary">Sign Out</button>
+    </section>
+
+    <section id="admin-panel" class="panel profile hidden">
+        <div class="profile-header">
+            <div>
+                <p class="eyebrow">Admin</p>
+                <h2>Grant Moderator Access</h2>
+            </div>
+        </div>
+        <form id="assign-role-form" class="auth-form active single-column">
+            <label>
+                <span>User Email</span>
+                <input type="email" name="email" placeholder="user@example.com" required>
+            </label>
+            <button type="submit" class="primary">Make Moderator</button>
+        </form>
+    </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
