@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+.env
+*.log
+.claude/
+data/
+avatars/

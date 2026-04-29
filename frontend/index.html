@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Exchange</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ───────────────────────── AUTH SCREEN ───────────────────────── -->
+<div id="auth-screen" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <span class="brand-icon">♦</span>
+      <h1>Card Exchange</h1>
+      <p>Покупай, продавай и обменивай карточки</p>
+    </div>
+
+    <div id="auth-tabs-panel" class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-auth-tab="login">Войти</button>
+        <button class="tab-btn" data-auth-tab="register">Регистрация</button>
+        <button class="tab-btn" data-auth-tab="forgot">Забыл пароль</button>
+      </div>
+
+      <form id="login-form" class="auth-form active">
+        <label>Имя пользователя<input type="text" name="username" required></label>
+        <label>Пароль<input type="password" name="password" required></label>
+        <button type="submit" class="btn-primary">Войти</button>
+      </form>
+
+      <form id="register-form" class="auth-form">
+        <label>Email<input type="email" name="email" required></label>
+        <label>Имя пользователя<input type="text" name="username" minlength="3" required></label>
+        <label>Пароль<input type="password" name="password" minlength="6" required></label>
+        <button type="submit" class="btn-primary">Создать аккаунт</button>
+      </form>
+
+      <form id="forgot-form" class="auth-form">
+        <p class="hint">Введи email — мы пришлём ссылку для сброса пароля.</p>
+        <label>Email<input type="email" name="email" required></label>
+        <button type="submit" class="btn-primary">Отправить ссылку</button>
+      </form>
+
+      <form id="reset-form" class="auth-form">
+        <p class="hint">Придумай новый пароль.</p>
+        <input type="hidden" name="token">
+        <label>Новый пароль<input type="password" name="new_password" minlength="6" required></label>
+        <button type="submit" class="btn-primary">Сохранить пароль</button>
+      </form>
+
+      <div id="auth-msg" class="msg" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────────── APP SHELL ───────────────────────── -->
+<div id="app-screen" class="screen hidden">
+  <nav class="sidebar">
+    <div class="sidebar-brand">♦ <span>Card Exchange</span></div>
+
+    <div class="nav-user" id="nav-user">
+      <img id="nav-avatar" class="nav-avatar" src="" alt="">
+      <div>
+        <div id="nav-username" class="nav-uname"></div>
+        <div id="nav-balance" class="nav-balance"></div>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="#" data-page="shop" class="nav-link active">🛒 Магазин</a></li>
+      <li><a href="#" data-page="trade-market" class="nav-link">🔄 Обмен</a></li>
+      <li><a href="#" data-page="profile" class="nav-link">👤 Профиль</a></li>
+      <li><a href="#" data-page="find-users" class="nav-link">🔍 Поиск игроков</a></li>
+      <li id="nav-mod" class="hidden"><a href="#" data-page="moderation" class="nav-link">🛡 Модерация</a></li>
+      <li id="nav-admin" class="hidden"><a href="#" data-page="admin" class="nav-link">⚙ Администратор</a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button id="notification-btn" class="notif-btn" title="Уведомления">
+        🔔 <span id="notif-badge" class="notif-badge hidden">0</span>
+      </button>
+      <button id="logout-btn" class="btn-ghost">Выйти</button>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <!-- NOTIFICATIONS PANEL -->
+    <div id="notif-panel" class="notif-panel hidden">
+      <div class="notif-header">
+        <span>Уведомления</span>
+        <button id="notif-clear" class="btn-ghost tiny">Очистить</button>
+      </div>
+      <div id="notif-list" class="notif-list"></div>
+    </div>
+
+    <!-- PAGE: SHOP -->
+    <div id="page-shop" class="page active">
+      <div class="page-header">
+        <h2>Магазин карточек</h2>
+        <p class="page-sub">Покупай карточки за внутреннюю валюту</p>
+      </div>
+      <div class="filters-row">
+        <input id="shop-search" type="search" placeholder="Поиск по названию…" class="filter-input">
+        <select id="shop-rarity" class="filter-select">
+          <option value="">Все редкости</option>
+          <option value="common">Common</option>
+          <option value="rare">Rare</option>
+          <option value="epic">Epic</option>
+          <option value="legendary">Legendary</option>
+        </select>
+        <input id="shop-min-price" type="number" placeholder="Цена от" min="0" class="filter-input narrow">
+        <input id="shop-max-price" type="number" placeholder="Цена до" min="0" class="filter-input narrow">
+        <button id="shop-filter-btn" class="btn-secondary">Фильтр</button>
+      </div>
+      <div id="shop-grid" class="card-grid"></div>
+      <div class="pagination-row">
+        <button id="shop-prev" class="btn-ghost" disabled>← Назад</button>
+        <span id="shop-page-info"></span>
+        <button id="shop-next" class="btn-ghost">Вперёд →</button>
+      </div>
+    </div>
+
+    <!-- PAGE: TRADE MARKET -->
+    <div id="page-trade-market" class="page hidden">
+      <div class="page-header">
+        <h2>Обменный рынок</h2>
+        <p class="page-sub">Предложи обмен — выбери карточку соперника, предложи свою</p>
+      </div>
+      <div class="filters-row">
+        <input id="tm-search" type="search" placeholder="Поиск по названию…" class="filter-input">
+        <select id="tm-rarity" class="filter-select">
+          <option value="">Все редкости</option>
+          <option value="common">Common</option>
+          <option value="rare">Rare</option>
+          <option value="epic">Epic</option>
+          <option value="legendary">Legendary</option>
+        </select>
+        <button id="tm-filter-btn" class="btn-secondary">Фильтр</button>
+      </div>
+      <div id="tm-grid" class="card-grid"></div>
+      <div class="pagination-row">
+        <button id="tm-prev" class="btn-ghost" disabled>← Назад</button>
+        <span id="tm-page-info"></span>
+        <button id="tm-next" class="btn-ghost">Вперёд →</button>
+      </div>
+    </div>
+
+    <!-- PAGE: PROFILE -->
+    <div id="page-profile" class="page hidden">
+      <div class="profile-hero">
+        <div class="profile-avatar-wrap">
+          <img id="profile-avatar-img" class="profile-avatar" src="" alt="Avatar">
+          <label class="avatar-upload-btn" title="Изменить аватар">
+            📷
+            <input id="avatar-input" type="file" accept="image/*" class="hidden">
+          </label>
+        </div>
+        <div class="profile-info">
+          <h2 id="profile-username"></h2>
+          <span id="profile-role-badge" class="role-badge"></span>
+          <div id="profile-balance" class="profile-balance"></div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" data-profile-tab="inventory">Коллекция</button>
+        <button class="tab-btn" data-profile-tab="pending-trades">Предложения обмена</button>
+        <button class="tab-btn" data-profile-tab="history">История сделок</button>
+        <button class="tab-btn" data-profile-tab="settings">Настройки</button>
+      </div>
+
+      <div id="profile-tab-inventory" class="profile-tab active">
+        <div class="inventory-controls">
+          <input id="inv-search" type="search" placeholder="Поиск в коллекции…" class="filter-input">
+        </div>
+        <div id="inventory-grid" class="card-grid"></div>
+      </div>
+
+      <div id="profile-tab-pending-trades" class="profile-tab hidden">
+        <div id="pending-trades-list" class="offers-list"></div>
+      </div>
+
+      <div id="profile-tab-history" class="profile-tab hidden">
+        <div id="history-list" class="history-list"></div>
+      </div>
+
+      <div id="profile-tab-settings" class="profile-tab hidden">
+        <div class="card settings-card">
+          <h3>Сменить пароль</h3>
+          <form id="change-pass-form" class="settings-form">
+            <label>Текущий пароль<input type="password" name="old_password" required></label>
+            <label>Новый пароль<input type="password" name="new_password" minlength="6" required></label>
+            <button type="submit" class="btn-primary">Сохранить</button>
+          </form>
+          <div id="settings-msg" class="msg" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: FIND USERS -->
+    <div id="page-find-users" class="page hidden">
+      <div class="page-header">
+        <h2>Поиск игроков</h2>
+      </div>
+      <div class="filters-row">
+        <input id="user-search-input" type="search" placeholder="Введи никнейм…" class="filter-input">
+        <button id="user-search-btn" class="btn-secondary">Найти</button>
+      </div>
+      <div id="user-search-results" class="user-results"></div>
+      <div id="viewed-profile" class="viewed-profile hidden">
+        <div class="profile-hero">
+          <img id="vp-avatar" class="profile-avatar" src="" alt="">
+          <div>
+            <h2 id="vp-username"></h2>
+            <span id="vp-role-badge" class="role-badge"></span>
+            <p id="vp-joined" class="muted"></p>
+          </div>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" data-vp-tab="collection">Коллекция</button>
+          <button class="tab-btn" data-vp-tab="history">История сделок</button>
+        </div>
+        <div id="vp-tab-collection" class="profile-tab active">
+          <div id="vp-card-grid" class="card-grid"></div>
+        </div>
+        <div id="vp-tab-history" class="profile-tab hidden">
+          <div id="vp-history-list" class="history-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: MODERATION -->
+    <div id="page-moderation" class="page hidden">
+      <div class="page-header">
+        <h2>Модерация карточек</h2>
+      </div>
+      <div class="filters-row">
+        <select id="mod-fake-filter" class="filter-select">
+          <option value="">Все карточки</option>
+          <option value="false">Оригинальные</option>
+          <option value="true">Фейки</option>
+        </select>
+        <button id="mod-filter-btn" class="btn-secondary">Фильтр</button>
+      </div>
+      <div id="mod-grid" class="card-grid"></div>
+
+      <div class="card add-card-section">
+        <h3>Добавить карточки</h3>
+        <form id="add-card-form" class="settings-form two-col">
+          <label>Название<input type="text" name="name" required></label>
+          <label>Редкость
+            <select name="rarity">
+              <option value="common">Common</option>
+              <option value="rare">Rare</option>
+              <option value="epic">Epic</option>
+              <option value="legendary">Legendary</option>
+            </select>
+          </label>
+          <label>Базовая цена<input type="number" name="price" min="0" step="0.01" value="100" required></label>
+          <label>Сила<input type="number" name="power" min="0" value="0"></label>
+          <label>Защита<input type="number" name="defense" min="0" value="0"></label>
+          <label class="full-col">Описание<textarea name="description" rows="2"></textarea></label>
+          <label class="full-col">URL изображения<input type="text" name="image_url" placeholder="https://…"></label>
+          <button type="submit" class="btn-primary full-col">Создать карточку</button>
+        </form>
+        <div id="add-card-msg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: ADMIN -->
+    <div id="page-admin" class="page hidden">
+      <div class="page-header"><h2>Администратор</h2></div>
+      <div class="card settings-card">
+        <h3>Назначить модератора</h3>
+        <form id="assign-role-form" class="settings-form">
+          <label>Email пользователя<input type="email" name="email" required></label>
+          <button type="submit" class="btn-primary">Назначить модератором</button>
+        </form>
+        <div id="admin-msg" class="msg" aria-live="polite"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ─────── MODALS ─────── -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <!-- Trade Propose Modal -->
+  <div id="modal-trade" class="modal hidden">
+    <button class="modal-close" data-close="modal-trade">✕</button>
+    <h3>Предложить обмен</h3>
+    <div class="trade-preview">
+      <div>
+        <p class="hint">Хочешь получить:</p>
+        <div id="modal-requested-card" class="mini-card"></div>
+      </div>
+      <div class="trade-arrow">⇄</div>
+      <div>
+        <p class="hint">Предлагаешь свою:</p>
+        <div id="modal-my-cards-list" class="mini-card-grid"></div>
+      </div>
+    </div>
+    <button id="modal-trade-submit" class="btn-primary" disabled>Отправить предложение</button>
+    <div id="modal-trade-msg" class="msg"></div>
+  </div>
+
+  <!-- Buy Confirm Modal -->
+  <div id="modal-buy" class="modal hidden">
+    <button class="modal-close" data-close="modal-buy">✕</button>
+    <h3>Купить карточку</h3>
+    <div id="modal-buy-card" class="mini-card large"></div>
+    <p id="modal-buy-text" class="modal-text"></p>
+    <button id="modal-buy-confirm" class="btn-primary">Купить</button>
+    <div id="modal-buy-msg" class="msg"></div>
+  </div>
+
+  <!-- Offer Detail Modal -->
+  <div id="modal-offer" class="modal hidden">
+    <button class="modal-close" data-close="modal-offer">✕</button>
+    <h3 id="modal-offer-title">Предложение обмена</h3>
+    <div class="trade-preview">
+      <div>
+        <p class="hint" id="modal-offer-label-a"></p>
+        <div id="modal-offer-card-a" class="mini-card"></div>
+      </div>
+      <div class="trade-arrow">⇄</div>
+      <div>
+        <p class="hint" id="modal-offer-label-b"></p>
+        <div id="modal-offer-card-b" class="mini-card"></div>
+      </div>
+    </div>
+    <div id="modal-offer-actions" class="modal-actions"></div>
+    <div id="modal-offer-msg" class="msg"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
